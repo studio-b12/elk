@@ -8,24 +8,40 @@ import (
 	"strconv"
 )
 
-// CallStack adds some additional utility
-// to a slice of runtime.Frame.
-type CallStack []runtime.Frame
+// CallStack contains the list of called
+// runtime.Frames in the call chain with
+// an offset from which frames are
+// reported.
+type CallStack struct {
+	frames []runtime.Frame
+	offset int
+}
+
+// Frames returns the offset slice of called
+// runtime.Frame's in the recorded call stack.
+func (t CallStack) Frames() []runtime.Frame {
+	if len(t.frames) < t.offset {
+		return nil
+	}
+	return t.frames[t.offset:]
+}
 
 // WriteIndent is an alias for write with the given
 // indent string attached before each line of output.
 func (t CallStack) WriteIndent(w io.Writer, max int, indent string) {
-	if max > 0 && len(t) > max {
-		t = t[:max]
+	frames := t.Frames()
+
+	if max > 0 && len(frames) > max {
+		frames = frames[:max]
 	}
 
 	maxLenFName := 0
-	for _, frame := range t {
+	for _, frame := range t.Frames() {
 		if l := len(frame.Function); l > maxLenFName {
 			maxLenFName = l
 		}
 	}
-	for _, frame := range t {
+	for _, frame := range t.Frames() {
 		fmt.Fprintf(w, "%s%-"+strconv.Itoa(maxLenFName)+"s\t%s:%d\n",
 			indent, frame.Function, frame.File, frame.Line)
 	}
@@ -49,9 +65,9 @@ func (t CallStack) String() string {
 	return b.String()
 }
 
-func getCallFrames(skip, n int) CallStack {
+func getCallFrames(offset, n int) CallStack {
 	callerPtrs := make([]uintptr, n)
-	nPtrs := runtime.Callers(skip+1, callerPtrs)
+	nPtrs := runtime.Callers(2, callerPtrs)
 	frameCursor := runtime.CallersFrames(callerPtrs[:nPtrs])
 
 	callFrames := make([]runtime.Frame, 0, nPtrs)
@@ -63,5 +79,8 @@ func getCallFrames(skip, n int) CallStack {
 		callFrames = append(callFrames, frame)
 	}
 
-	return callFrames
+	return CallStack{
+		frames: callFrames,
+		offset: offset,
+	}
 }

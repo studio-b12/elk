@@ -31,7 +31,9 @@ type DetailedError struct {
 // the call stack from where this method has been called
 // is embedded in the DetailedError.
 func Wrap(err error, details ...any) DetailedError {
-	return WrapMessage(err, "", details...)
+	dErr := WrapMessage(err, "", details...)
+	dErr.callStack.offset++
+	return dErr
 }
 
 // WrapMessage is the same as wrap including an
@@ -43,7 +45,7 @@ func WrapMessage(err error, message string, details ...any) DetailedError {
 
 	d.Inner = err
 	d.message = message
-	d.callStack = getCallFrames(3, maxCallStackDepth)
+	d.callStack = getCallFrames(1, maxCallStackDepth)
 
 	if len(details) > 1 {
 		d.details = details
@@ -82,7 +84,7 @@ func (t DetailedError) Formatted() string {
 		}
 	}
 
-	if len(t.callStack) > 0 {
+	if len(t.callStack.Frames()) > 0 {
 		sb.WriteString("caused at:\n")
 		t.callStack.WriteIndent(&sb, 5, indent)
 	}
