@@ -36,3 +36,13 @@ func IsOfType[T error](err error) bool {
 
 	return false
 }
+
+// Format returns the formatted error message
+// when err implements Formatted. Otherwise,
+// the result of err.Error() is returned.
+func Format(err error) string {
+	if fErr, ok := err.(Formatted); ok {
+		return fErr.Formatted()
+	}
+	return err.Error()
+}

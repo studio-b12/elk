@@ -1,6 +1,7 @@
 package whoops
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 	"strings"
@@ -26,12 +27,18 @@ type DetailedError struct {
 }
 
 // Wrap takes an error and optionally some additional
-// details
-func Wrap(err error, details ...any) error {
+// details and created a DetailedError from that. Also,
+// the call stack from where this method has been called
+// is embedded in the DetailedError.
+func Wrap(err error, details ...any) DetailedError {
 	return WrapMessage(err, "", details...)
 }
 
-func WrapMessage(err error, message string, details ...any) error {
+// WrapMessage is the same as wrap including an
+// additional message. The message will be shown
+// in place of the wrapped errors result of the
+// Error() method.
+func WrapMessage(err error, message string, details ...any) DetailedError {
 	var d DetailedError
 
 	d.Inner = err
@@ -47,14 +54,20 @@ func WrapMessage(err error, message string, details ...any) error {
 	return d
 }
 
+// Error returns the error information as
+// formatted string.
 func (t DetailedError) Error() string {
+	var b bytes.Buffer
+	t.writeTitle(&b)
+	return b.String()
+}
+
+// Formatted returns the errors detailed
+// information as formatted string.
+func (t DetailedError) Formatted() string {
 	var sb strings.Builder
 
-	if t.message != "" {
-		fmt.Fprintf(&sb, "%s (%s)", t.message, t.Inner.Error())
-	} else {
-		sb.WriteString(t.Inner.Error())
-	}
+	t.writeTitle(&sb)
 
 	sb.WriteByte('\n')
 
@@ -77,16 +90,31 @@ func (t DetailedError) Error() string {
 	return sb.String()
 }
 
+// Message returns the errors message text,
+// if specified.
 func (t DetailedError) Message() string {
 	return t.message
 }
 
+// CallStack returns the errors CallStack
+// starting from where the DetailedError
+// has been created.
 func (t DetailedError) CallStack() CallStack {
 	return t.callStack
 }
 
+// Details returns the errros details,
+// if specified.
 func (t DetailedError) Details() any {
 	return t.details
+}
+
+func (t DetailedError) writeTitle(w io.Writer) {
+	if t.message != "" {
+		fmt.Fprintf(w, "%s (%s)", t.message, t.Inner.Error())
+	} else {
+		fmt.Fprintf(w, "%s", t.Inner.Error())
+	}
 }
 
 func writeDetails(w io.Writer, v any, prefix string) {
