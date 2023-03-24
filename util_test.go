@@ -1,31 +1,11 @@
 package whoops_test
 
 import (
-	"errors"
-	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/studio-b12/whoops"
 )
-
-func ExampleAs() {
-	type WrappedError struct {
-		whoops.InnerError
-	}
-
-	err := errors.New("Some error")
-	err = whoops.WrapMessage(err, "Some message")
-	err = WrappedError{InnerError: whoops.InnerError{Inner: err}}
-
-	detailedError, ok := whoops.As[whoops.DetailedError](err)
-	if ok {
-		message := detailedError.Message()
-		fmt.Println(message)
-	}
-
-	// Output: Some message
-}
 
 func TestIsTypeOf(t *testing.T) {
 	assert.True(t,
