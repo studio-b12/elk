@@ -45,9 +45,14 @@ func Wrap(err error, details ...any) DetailedError {
 func WrapMessage(err error, message string, details ...any) DetailedError {
 	var d DetailedError
 
+	if dErr, ok := As[HasCallStack](err); ok {
+		d.callStack = dErr.CallStack()
+	} else {
+		d.callStack = getCallFrames(1, maxCallStackDepth)
+	}
+
 	d.Inner = err
 	d.message = message
-	d.callStack = getCallFrames(1, maxCallStackDepth)
 
 	if len(details) > 1 {
 		d.details = details

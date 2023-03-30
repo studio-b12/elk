@@ -28,3 +28,9 @@ type HasDetails interface {
 	// Details returns the value for details.
 	Details() any
 }
+
+type HasCallStack interface {
+	error
+
+	CallStack() CallStack
+}
