@@ -1,6 +1,6 @@
 # whoops
 
-An extensive error package with focus on ease of use.
+An extensive error package with focus on comprehensiveness, tracability and ease of use.
 
 ## Contribute
 
