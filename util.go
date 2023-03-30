@@ -136,6 +136,30 @@ func MustJson(err error) string {
 	return mustV(Json(err))
 }
 
+// DetailsOfType unwraps err until an instance has
+// been found that implements HasDetails and the type
+// returned from Details() matches the given type T.
+//
+// If nothing can be found, the default value of T as
+// well as false is returned.
+func DetailsOfType[T any](err error) (target T, ok bool) {
+	for {
+		if err == nil {
+			return target, false
+		}
+
+		detailedErr, has := err.(HasDetails)
+		if has {
+			target, ok = detailedErr.Details().(T)
+			if ok {
+				return target, ok
+			}
+		}
+
+		err = errors.Unwrap(err)
+	}
+}
+
 func mustV[TV any](v TV, err error) TV {
 	if err != nil {
 		panic(err)
