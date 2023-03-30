@@ -106,7 +106,7 @@ type errorJsonModel struct {
 func Json(err error) (string, error) {
 	var model errorJsonModel
 
-	uErr := errors.Unwrap(err)
+	uErr := UnwrapFull(err)
 	if uErr == nil {
 		model.Error = err.Error()
 	} else {
