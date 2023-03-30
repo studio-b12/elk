@@ -26,6 +26,8 @@ type DetailedError struct {
 	callStack CallStack
 }
 
+var _ Formatted = (*DetailedError)(nil)
+
 // Wrap takes an error and optionally some additional
 // details and created a DetailedError from that. Also,
 // the call stack from where this method has been called
