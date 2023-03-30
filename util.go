@@ -103,17 +103,16 @@ type errorJsonModel struct {
 //
 // When the JSON marshal fails, an error is
 // returned.
-func Json(err error) (string, error) {
+func Json(err error, showDetails ...bool) (string, error) {
 	var model errorJsonModel
 
-	uErr := UnwrapFull(err)
-	if uErr == nil {
-		model.Error = err.Error()
-	} else {
-		model.Error = uErr.Error()
-		if mErr, ok := err.(HasMessage); ok {
-			model.Message = mErr.Message()
-		}
+	model.Error = UnwrapFull(err).Error()
+
+	if mErr, ok := err.(HasMessage); ok {
+		model.Message = mErr.Message()
+	}
+
+	if len(showDetails) > 0 && showDetails[0] {
 		if mErr, ok := err.(HasDetails); ok {
 			model.Details = mErr.Details()
 			if dErr, ok := model.Details.(error); ok {
