@@ -26,7 +26,7 @@ type DetailedError struct {
 	callStack CallStack
 }
 
-var _ Formatted = (*DetailedError)(nil)
+var _ HasFormat = (*DetailedError)(nil)
 
 // Wrap takes an error and optionally some additional
 // details and created a DetailedError from that. Also,
@@ -127,6 +127,8 @@ func writeDetails(w io.Writer, v any, prefix string) {
 	switch vt := v.(type) {
 	case string:
 		details = vt + "\n"
+	case error:
+		details = vt.Error() + "\n"
 	case interface{ String() string }:
 		details = vt.String() + "\n"
 	case io.Reader:
