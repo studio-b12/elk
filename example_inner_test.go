@@ -24,7 +24,7 @@ func (t StatusError) Error() string {
 	return fmt.Sprintf("%s (%d)", t.Inner.Error(), t.StatusCode)
 }
 
-func Example() {
+func Example_inner() {
 	err := errors.New("not found")
 	statusErr := NewStatusError(err, 404)
 	fmt.Println(statusErr.Error())
