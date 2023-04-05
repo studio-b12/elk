@@ -49,22 +49,53 @@ type fooImpl struct{}
 func (fooImpl) Foo() {}
 
 func TestWithDetailsOfType(t *testing.T) {
-	err := errors.New("err")
-	err = whoops.Wrap(err, fooImpl{})
-	err = whoops.Wrap(err, "something else")
+	t.Run("first", func(t *testing.T) {
+		err := errors.New("err")
+		err = whoops.Wrap(err, "first wrapped string")
+		err = whoops.Wrap(err, fooImpl{})
+		err = whoops.Wrap(err, "mid wrapped string")
+		err = whoops.Wrap(err, 123.456)
+		err = whoops.Wrap(err, "last wrapped string")
 
-	_, ok := whoops.DetailsOfType[fooImpl](err)
-	assert.True(t, ok)
+		_, ok := whoops.DetailsOfType[fooImpl](err)
+		assert.True(t, ok)
 
-	_, ok = whoops.DetailsOfType[string](err)
-	assert.True(t, ok)
+		_, ok = whoops.DetailsOfType[foo](err)
+		assert.True(t, ok)
 
-	_, ok = whoops.DetailsOfType[foo](err)
-	assert.True(t, ok)
+		_, ok = whoops.DetailsOfType[int](err)
+		assert.False(t, ok)
 
-	_, ok = whoops.DetailsOfType[int](err)
-	assert.False(t, ok)
+		_, ok = whoops.DetailsOfType[*fooImpl](err)
+		assert.False(t, ok)
 
-	_, ok = whoops.DetailsOfType[*fooImpl](err)
-	assert.False(t, ok)
+		v, ok := whoops.DetailsOfType[string](err)
+		assert.True(t, ok)
+		assert.Equal(t, "last wrapped string", v)
+	})
+
+	t.Run("last", func(t *testing.T) {
+		err := errors.New("err")
+		err = whoops.Wrap(err, "first wrapped string")
+		err = whoops.Wrap(err, fooImpl{})
+		err = whoops.Wrap(err, "mid wrapped string")
+		err = whoops.Wrap(err, 123.456)
+		err = whoops.Wrap(err, "last wrapped string")
+
+		_, ok := whoops.DetailsOfType[fooImpl](err, true)
+		assert.True(t, ok)
+
+		_, ok = whoops.DetailsOfType[foo](err, true)
+		assert.True(t, ok)
+
+		_, ok = whoops.DetailsOfType[int](err, true)
+		assert.False(t, ok)
+
+		_, ok = whoops.DetailsOfType[*fooImpl](err, true)
+		assert.False(t, ok)
+
+		v, ok := whoops.DetailsOfType[string](err, true)
+		assert.True(t, ok)
+		assert.Equal(t, "first wrapped string", v)
+	})
 }

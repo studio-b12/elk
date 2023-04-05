@@ -139,19 +139,29 @@ func MustJson(err error) string {
 // been found that implements HasDetails and the type
 // returned from Details() matches the given type T.
 //
+// If last is passed as true, the error will be unwrapped
+// fully and the last occurence (so the first error wrapped
+// with the details of type T) will be returned.
+//
 // If nothing can be found, the default value of T as
 // well as false is returned.
-func DetailsOfType[T any](err error) (target T, ok bool) {
+func DetailsOfType[T any](err error, last ...bool) (target T, found bool) {
+	lst := len(last) > 0 && last[0]
+
 	for {
 		if err == nil {
-			return target, false
+			return target, found
 		}
 
 		detailedErr, has := err.(HasDetails)
 		if has {
-			target, ok = detailedErr.Details().(T)
+			t, ok := detailedErr.Details().(T)
 			if ok {
-				return target, ok
+				target = t
+				found = ok
+				if !lst {
+					return target, found
+				}
 			}
 		}
 

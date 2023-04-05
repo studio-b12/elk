@@ -121,16 +121,26 @@ func ExampleDetailsOfType() {
 	}
 
 	err := errors.New("some error")
-	err = whoops.Wrap(err, "some string details")
+	err = whoops.Wrap(err, "some inner string details")
+	err = whoops.Wrap(err, errors.New("some detail error"))
 	err = whoops.Wrap(err, status{"some message", 42})
+	err = whoops.Wrap(err, "some outer string details")
 
 	strDetails, _ := whoops.DetailsOfType[string](err)
-	fmt.Printf("strDetails: %s\n", strDetails)
+	fmt.Printf("strDetails (first): %s\n", strDetails)
+
+	strDetails, _ = whoops.DetailsOfType[string](err, true)
+	fmt.Printf("strDetails (last): %s\n", strDetails)
+
+	errDetails, _ := whoops.DetailsOfType[error](err)
+	fmt.Printf("errDetails: %v\n", errDetails)
 
 	statusDetails, _ := whoops.DetailsOfType[status](err)
 	fmt.Printf("statusDetails: %+v\n", statusDetails)
 
 	// Output:
-	// strDetails: some string details
+	// strDetails (first): some outer string details
+	// strDetails (last): some inner string details
+	// errDetails: some detail error
 	// statusDetails: {message:some message code:42}
 }
