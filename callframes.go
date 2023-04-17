@@ -36,14 +36,14 @@ func (t CallStack) WriteIndent(w io.Writer, max int, indent string) {
 	}
 
 	maxLenFName := 0
-	for _, frame := range t.Frames() {
+	for _, frame := range frames {
 		if l := len(frame.Function); l > maxLenFName {
 			maxLenFName = l
 		}
 	}
-	for _, frame := range t.Frames() {
-		fmt.Fprintf(w, "%s%-"+strconv.Itoa(maxLenFName)+"s\t%s:%d\n",
-			indent, frame.Function, frame.File, frame.Line)
+	for _, frame := range frames {
+		format := "%s%-" + strconv.Itoa(maxLenFName) + "s\t%s:%d\n"
+		fmt.Fprintf(w, format, indent, frame.Function, frame.File, frame.Line)
 	}
 }
 
@@ -72,11 +72,11 @@ func getCallFrames(offset, n int) CallStack {
 
 	callFrames := make([]runtime.Frame, 0, nPtrs)
 	for {
-		frame, next := frameCursor.Next()
-		if !next {
+		frame, more := frameCursor.Next()
+		callFrames = append(callFrames, frame)
+		if !more {
 			break
 		}
-		callFrames = append(callFrames, frame)
 	}
 
 	return CallStack{
