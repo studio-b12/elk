@@ -2,7 +2,6 @@ package whoops_test
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -11,15 +10,15 @@ import (
 )
 
 var (
-	ErrorReadFile      = errors.New("files:failed-reading-file")
-	ErrorParsingConfig = errors.New("config:failed-parsing")
-	ErrorReadingConfig = errors.New("config:failed-reading")
+	ErrorReadFile      = whoops.ErrorCode("files:failed-reading-file")
+	ErrorParsingConfig = whoops.ErrorCode("config:failed-parsing")
+	ErrorReadingConfig = whoops.ErrorCode("config:failed-reading")
 )
 
 func readFile() ([]byte, error) {
 	data, err := os.ReadFile("does/not/exist")
 	if err != nil {
-		return nil, whoops.WrapMessage(ErrorReadFile, "failed reading file", err)
+		return nil, whoops.Wrap(ErrorReadFile, err, "failed reading file")
 	}
 	return data, nil
 }
@@ -33,13 +32,13 @@ func parseConfig() (cfg configModel, err error) {
 	data, err := readFile()
 	if err != nil {
 		return configModel{},
-			whoops.WrapMessage(ErrorReadFile, "failed reading config file", err)
+			whoops.Wrap(ErrorReadFile, err, "failed reading config file")
 	}
 
 	err = json.Unmarshal(data, &cfg)
 	if err != nil {
 		return configModel{},
-			whoops.WrapMessage(ErrorParsingConfig, "failed parsing config data", err)
+			whoops.Wrap(ErrorParsingConfig, err, "failed parsing config data")
 	}
 
 	return cfg, nil

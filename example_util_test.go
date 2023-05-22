@@ -14,7 +14,7 @@ func ExampleUnwrapFull() {
 
 	var err error
 	originErr := errors.New("some error")
-	err = whoops.WrapMessage(originErr, "Some message")
+	err = whoops.Wrap(whoops.CodeUnexpected, originErr, "Some message")
 	err = WrappedError{InnerError: whoops.InnerError{Inner: err}}
 
 	err = whoops.UnwrapFull(err)
@@ -24,12 +24,14 @@ func ExampleUnwrapFull() {
 }
 
 func ExampleAs() {
+	const ErrUnexpected = whoops.ErrorCode("unexpected-error")
+
 	type WrappedError struct {
 		whoops.InnerError
 	}
 
 	err := errors.New("some error")
-	err = whoops.WrapMessage(err, "Some message")
+	err = whoops.Wrap(whoops.CodeUnexpected, err, "Some message")
 	err = WrappedError{InnerError: whoops.InnerError{Inner: err}}
 
 	detailedError, ok := whoops.As[whoops.DetailedError](err)
@@ -47,7 +49,7 @@ func ExampleIsOfType() {
 	}
 
 	innerError := errors.New("some error")
-	var err error = whoops.WrapMessage(innerError, "Some message")
+	var err error = whoops.Wrap(whoops.CodeUnexpected, innerError, "Some message")
 	err = WrappedError{InnerError: whoops.InnerError{Inner: err}}
 
 	is := whoops.IsOfType[whoops.DetailedError](innerError)
@@ -66,14 +68,14 @@ func ExampleFormat() {
 	msg := whoops.Format(err)
 	fmt.Println(msg)
 
-	err = whoops.WrapMessage(err, "Oh no!", "anyway")
+	err = whoops.Wrap(whoops.CodeUnexpected, err, "Oh no!", "anyway")
 	msg = whoops.Format(err)
 	fmt.Println(msg)
 }
 
 func ExampleMessage() {
 	strErr := errors.New("some error")
-	dErr := whoops.WrapMessage(strErr, "some message")
+	dErr := whoops.Wrap(whoops.CodeUnexpected, strErr, "some message")
 
 	fmt.Println(whoops.Message(strErr))
 	fmt.Println(whoops.Message(dErr))
@@ -85,17 +87,11 @@ func ExampleMessage() {
 
 func ExampleJson() {
 	strErr := errors.New("some error")
-	dErr := whoops.WrapMessage(strErr, "some message", "some details")
+	dErr := whoops.Wrap(whoops.ErrorCode("some-error-code"), strErr, "some message")
 
-	json, _ := whoops.Json(strErr)
+	json, _ := whoops.Json(strErr, true)
 	fmt.Println(json)
 
-	json, _ = whoops.Json(dErr)
-	fmt.Println(json)
-
-	// Details are excluded by default, but you can
-	// pass "true" for showDetails to include them
-	// in the JSON output.
 	json, _ = whoops.Json(dErr, true)
 	fmt.Println(json)
 
@@ -105,42 +101,7 @@ func ExampleJson() {
 	// }
 	// {
 	//   "error": "some error",
+	//   "code": "some-error-code",
 	//   "message": "some message"
 	// }
-	// {
-	//   "error": "some error",
-	//   "message": "some message",
-	//   "details": "some details"
-	// }
-}
-
-func ExampleDetailsOfType() {
-	type status struct {
-		message string
-		code    int
-	}
-
-	err := errors.New("some error")
-	err = whoops.Wrap(err, "some inner string details")
-	err = whoops.Wrap(err, errors.New("some detail error"))
-	err = whoops.Wrap(err, status{"some message", 42})
-	err = whoops.Wrap(err, "some outer string details")
-
-	strDetails, _ := whoops.DetailsOfType[string](err)
-	fmt.Printf("strDetails (first): %s\n", strDetails)
-
-	strDetails, _ = whoops.DetailsOfType[string](err, true)
-	fmt.Printf("strDetails (last): %s\n", strDetails)
-
-	errDetails, _ := whoops.DetailsOfType[error](err)
-	fmt.Printf("errDetails: %v\n", errDetails)
-
-	statusDetails, _ := whoops.DetailsOfType[status](err)
-	fmt.Printf("statusDetails: %+v\n", statusDetails)
-
-	// Output:
-	// strDetails (first): some outer string details
-	// strDetails (last): some inner string details
-	// errDetails: some detail error
-	// statusDetails: {message:some message code:42}
 }

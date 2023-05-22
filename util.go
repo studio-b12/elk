@@ -71,20 +71,18 @@ func Message(err error) string {
 	return err.Error()
 }
 
-// Details returns the details when error
-// implements HasDetails. Otherwise, nil
-// is returned.
-func Details(err error) any {
-	if mErr, ok := err.(HasDetails); ok {
-		return mErr.Details()
+func Code(err error) ErrorCode {
+	if cErr, ok := err.(HasCode); ok {
+		return cErr.Code()
 	}
-	return nil
+	return CodeUnexpected
 }
 
 type errorJsonModel struct {
-	Error   string `json:"error"`
-	Message string `json:"message,omitempty"`
-	Details any    `json:"details,omitempty"`
+	Error   string    `json:"error,omitempty"`
+	Code    ErrorCode `json:"code,omitempty"`
+	Message string    `json:"message,omitempty"`
+	Details any       `json:"details,omitempty"`
 }
 
 // Json takes an error and marhals it into
@@ -103,22 +101,23 @@ type errorJsonModel struct {
 //
 // When the JSON marshal fails, an error is
 // returned.
-func Json(err error, showDetails ...bool) (string, error) {
+func Json(err error, includeInner ...bool) (string, error) {
 	var model errorJsonModel
 
-	model.Error = UnwrapFull(err).Error()
+	if len(includeInner) > 0 && includeInner[0] {
+		if inner := errors.Unwrap(err); inner != nil {
+			model.Error = inner.Error()
+		} else {
+			model.Error = err.Error()
+		}
+	}
 
 	if mErr, ok := err.(HasMessage); ok {
 		model.Message = mErr.Message()
 	}
 
-	if len(showDetails) > 0 && showDetails[0] {
-		if mErr, ok := err.(HasDetails); ok {
-			model.Details = mErr.Details()
-			if dErr, ok := model.Details.(error); ok {
-				model.Details = dErr.Error()
-			}
-		}
+	if cErr, ok := err.(HasCode); ok {
+		model.Code = cErr.Code()
 	}
 
 	data, jErr := json.MarshalIndent(model, "", "  ")
@@ -133,40 +132,6 @@ func Json(err error, showDetails ...bool) (string, error) {
 // the call to Json returns an error.
 func MustJson(err error) string {
 	return mustV(Json(err))
-}
-
-// DetailsOfType unwraps err until an instance has
-// been found that implements HasDetails and the type
-// returned from Details() matches the given type T.
-//
-// If last is passed as true, the error will be unwrapped
-// fully and the last occurence (so the first error wrapped
-// with the details of type T) will be returned.
-//
-// If nothing can be found, the default value of T as
-// well as false is returned.
-func DetailsOfType[T any](err error, last ...bool) (target T, found bool) {
-	lst := len(last) > 0 && last[0]
-
-	for {
-		if err == nil {
-			return target, found
-		}
-
-		detailedErr, has := err.(HasDetails)
-		if has {
-			t, ok := detailedErr.Details().(T)
-			if ok {
-				target = t
-				found = ok
-				if !lst {
-					return target, found
-				}
-			}
-		}
-
-		err = errors.Unwrap(err)
-	}
 }
 
 func mustV[TV any](v TV, err error) TV {

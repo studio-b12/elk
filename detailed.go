@@ -2,11 +2,16 @@ package whoops
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"io"
 	"strings"
+)
 
-	"github.com/davecgh/go-spew/spew"
+type ErrorCode string
+
+const (
+	CodeUnexpected = ErrorCode("unexpected-error")
 )
 
 const (
@@ -21,29 +26,33 @@ const (
 type DetailedError struct {
 	InnerError
 
+	code      ErrorCode
 	message   string
-	details   any
 	callStack CallStack
 }
 
-var _ HasFormat = (*DetailedError)(nil)
+var (
+	_ HasFormat    = (*DetailedError)(nil)
+	_ HasMessage   = (*DetailedError)(nil)
+	_ HasCode      = (*DetailedError)(nil)
+	_ HasCallStack = (*DetailedError)(nil)
+)
 
-// Wrap takes an error and optionally some additional
-// details and created a DetailedError from that. Also,
-// the call stack from where this method has been called
-// is embedded in the DetailedError.
-func Wrap(err error, details ...any) DetailedError {
-	dErr := WrapMessage(err, "", details...)
-	dErr.callStack.offset++
-	return dErr
+// Detailed creates a new DetailedError with the
+// given code and optional message.
+func Detailed(code ErrorCode, message ...string) DetailedError {
+	d := Wrap(code, errors.New(string(code)), message...)
+	d.callStack.offset++
+	return d
 }
 
 // WrapMessage is the same as wrap including an
 // additional message. The message will be shown
 // in place of the wrapped errors result of the
 // Error() method.
-func WrapMessage(err error, message string, details ...any) DetailedError {
+func Wrap(code ErrorCode, err error, message ...string) DetailedError {
 	var d DetailedError
+	d.code = code
 
 	if dErr, ok := As[HasCallStack](err); ok {
 		d.callStack = dErr.CallStack()
@@ -52,12 +61,9 @@ func WrapMessage(err error, message string, details ...any) DetailedError {
 	}
 
 	d.Inner = err
-	d.message = message
 
-	if len(details) > 1 {
-		d.details = details
-	} else if len(details) == 1 {
-		d.details = details[0]
+	if len(message) > 0 {
+		d.message = strings.Join(message, " ")
 	}
 
 	return d
@@ -80,16 +86,7 @@ func (t DetailedError) Formatted() string {
 
 	sb.WriteByte('\n')
 
-	if t.details != nil {
-		sb.WriteString("details:\n")
-		if dSlice, ok := t.details.([]any); ok {
-			for _, d := range dSlice {
-				writeDetails(&sb, d, indent)
-			}
-		} else {
-			writeDetails(&sb, t.details, indent)
-		}
-	}
+	fmt.Fprintf(&sb, "error code: %s\n", t.code)
 
 	if len(t.callStack.Frames()) > 0 {
 		sb.WriteString("caused at:\n")
@@ -105,17 +102,17 @@ func (t DetailedError) Message() string {
 	return t.message
 }
 
+// Code returns the inner ErrorCode of
+// the error.
+func (t DetailedError) Code() ErrorCode {
+	return t.code
+}
+
 // CallStack returns the errors CallStack
 // starting from where the DetailedError
 // has been created.
 func (t DetailedError) CallStack() CallStack {
 	return t.callStack
-}
-
-// Details returns the errros details,
-// if specified.
-func (t DetailedError) Details() any {
-	return t.details
 }
 
 func (t DetailedError) writeTitle(w io.Writer) {
@@ -124,34 +121,4 @@ func (t DetailedError) writeTitle(w io.Writer) {
 	} else {
 		fmt.Fprintf(w, "%s", t.Inner.Error())
 	}
-}
-
-func writeDetails(w io.Writer, v any, prefix string) {
-	var details string
-
-	switch vt := v.(type) {
-	case string:
-		details = vt + "\n"
-	case error:
-		details = vt.Error() + "\n"
-	case interface{ String() string }:
-		details = vt.String() + "\n"
-	case io.Reader:
-		b, err := io.ReadAll(vt)
-		if err == nil {
-			details = string(b) + "\n"
-		}
-	default:
-		details = spew.Sdump(v)
-	}
-
-	lines := strings.Split(details, "\n")
-	for i, line := range lines {
-		if i == len(lines)-1 && line == "" {
-			break
-		}
-		lines[i] = prefix + line
-	}
-
-	w.Write([]byte(strings.Join(lines, "\n")))
 }

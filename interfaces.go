@@ -20,13 +20,14 @@ type HasMessage interface {
 	Message() string
 }
 
-// HasDetails describes an error which has
-// additional details of any type.
-type HasDetails interface {
+// HasCode describes an error which has an
+// ErrorCode.
+type HasCode interface {
 	error
 
-	// Details returns the value for details.
-	Details() any
+	// Code returns the inner ErrorCode of
+	// the error.
+	Code() ErrorCode
 }
 
 type HasCallStack interface {
