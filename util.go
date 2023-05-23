@@ -79,15 +79,28 @@ func Code(err error) ErrorCode {
 }
 
 type errorJsonModel struct {
-	Error   string    `json:"error,omitempty"`
+	Error   string    `json:"error"`
 	Code    ErrorCode `json:"code,omitempty"`
 	Message string    `json:"message,omitempty"`
 	Details any       `json:"details,omitempty"`
 }
 
 // Json takes an error and marhals it into
-// a JSON string. It will contain the
-// inner error as "error" field.
+// a JSON string.
+//
+// If err is a wrapped error, the inner error
+// will be represented in the "error" field.
+// Otherwise, the result of Error() on err will
+// be represented in the "error" field. This
+// does only apply though if exposeError is
+// passed as true. By default, "error" will
+// contain no information about the actual
+// error to prevent unintented information
+// leakage.
+//
+// If the err implements HasCode, the code
+// of the error will be represented in the
+// "code" field of the JSON result.
 //
 // If the err implements HasMessage, the
 // JSON object will contain it as "message"
@@ -101,15 +114,17 @@ type errorJsonModel struct {
 //
 // When the JSON marshal fails, an error is
 // returned.
-func Json(err error, includeInner ...bool) (string, error) {
+func Json(err error, exposeError ...bool) (string, error) {
 	var model errorJsonModel
 
-	if len(includeInner) > 0 && includeInner[0] {
+	if len(exposeError) > 0 && exposeError[0] {
 		if inner := errors.Unwrap(err); inner != nil {
 			model.Error = inner.Error()
 		} else {
 			model.Error = err.Error()
 		}
+	} else {
+		model.Error = "internal error"
 	}
 
 	if mErr, ok := err.(HasMessage); ok {

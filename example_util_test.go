@@ -89,18 +89,32 @@ func ExampleJson() {
 	strErr := errors.New("some error")
 	dErr := whoops.Wrap(whoops.ErrorCode("some-error-code"), strErr, "some message")
 
-	json, _ := whoops.Json(strErr, true)
+	json, _ := whoops.Json(strErr)
+	fmt.Println(json)
+
+	json, _ = whoops.Json(strErr, true)
 	fmt.Println(json)
 
 	json, _ = whoops.Json(dErr, true)
 	fmt.Println(json)
 
+	json, _ = whoops.Json(dErr)
+	fmt.Println(json)
+
 	// Output:
+	// {
+	//   "error": "internal error"
+	// }
 	// {
 	//   "error": "some error"
 	// }
 	// {
 	//   "error": "some error",
+	//   "code": "some-error-code",
+	//   "message": "some message"
+	// }
+	// {
+	//   "error": "internal error",
 	//   "code": "some-error-code",
 	//   "message": "some message"
 	// }
