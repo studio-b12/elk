@@ -106,12 +106,6 @@ type errorJsonModel struct {
 // JSON object will contain it as "message"
 // field, if present.
 //
-// If the err implements HasDetails, the
-// JSON object will contain them as "details"
-// field, if present. If details is an error,
-// the contents of the Error() method are
-// represented in the field.
-//
 // When the JSON marshal fails, an error is
 // returned.
 func Json(err error, exposeError ...bool) (string, error) {
