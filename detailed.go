@@ -117,7 +117,7 @@ func (t DetailedError) CallStack() CallStack {
 
 func (t DetailedError) writeTitle(w io.Writer) {
 	if t.message != "" {
-		fmt.Fprintf(w, "%s (%s)", t.message, t.Inner.Error())
+		fmt.Fprintf(w, "%s\ninner error: %s", t.message, t.Inner.Error())
 	} else {
 		fmt.Fprintf(w, "%s", t.Inner.Error())
 	}
