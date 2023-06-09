@@ -65,6 +65,20 @@ func (t CallStack) String() string {
 	return b.String()
 }
 
+// At returns the formatted call frame at the given position n
+// if existent.
+func (t CallStack) At(n int) (s string, ok bool) {
+	n += t.offset
+
+	if n >= len(t.frames) || n < 0 {
+		return "", false
+	}
+
+	frame := t.frames[n]
+	s = fmt.Sprintf("%s %s:%d", frame.Function, frame.File, frame.Line)
+	return s, true
+}
+
 func getCallFrames(offset, n int) CallStack {
 	callerPtrs := make([]uintptr, n)
 	nPtrs := runtime.Callers(2, callerPtrs)

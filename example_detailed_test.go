@@ -48,6 +48,6 @@ func Example_detailedError() {
 	_, err := parseConfig()
 	if err != nil {
 		fmt.Println(err)
-		log.Fatal("config parsing failed:", whoops.Format(err))
+		log.Fatalf("config parsing failed: %s", err)
 	}
 }

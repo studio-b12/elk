@@ -63,28 +63,6 @@ func ExampleIsOfType() {
 	// err: true
 }
 
-func ExampleFormat() {
-	err := errors.New("some normal error")
-	msg := whoops.Format(err)
-	fmt.Println(msg)
-
-	err = whoops.Wrap(whoops.CodeUnexpected, err, "Oh no!", "anyway")
-	msg = whoops.Format(err)
-	fmt.Println(msg)
-}
-
-func ExampleMessage() {
-	strErr := errors.New("some error")
-	dErr := whoops.Wrap(whoops.CodeUnexpected, strErr, "some message")
-
-	fmt.Println(whoops.Message(strErr))
-	fmt.Println(whoops.Message(dErr))
-
-	// Output:
-	// some error
-	// some message
-}
-
 func ExampleJson() {
 	strErr := errors.New("some error")
 	dErr := whoops.Wrap(whoops.ErrorCode("some-error-code"), strErr, "some message")
@@ -118,4 +96,17 @@ func ExampleJson() {
 	//   "code": "some-error-code",
 	//   "message": "some message"
 	// }
+}
+
+func Example_formatting() {
+	err := errors.New("some normal error")
+	fmt.Printf("%s\n", err)
+
+	err = whoops.Wrap(whoops.CodeUnexpected, err, "Oh no!", "anyway")
+
+	// Print with callstack of depth 5
+	fmt.Printf("%+5v\n", err)
+
+	// Print detailed error stack
+	fmt.Printf("%#v\n", err)
 }

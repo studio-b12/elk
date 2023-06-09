@@ -51,33 +51,6 @@ func IsOfType[T error](err error) bool {
 	return false
 }
 
-// Format returns the formatted error message
-// when err implements Formatted. Otherwise,
-// the result of err.Error() is returned.
-func Format(err error) string {
-	if fErr, ok := err.(HasFormat); ok {
-		return fErr.Formatted()
-	}
-	return err.Error()
-}
-
-// Message returns the message when error
-// implements HasMessage. Otherwise, the
-// content of err.Error() is returned.
-func Message(err error) string {
-	if mErr, ok := err.(HasMessage); ok {
-		return mErr.Message()
-	}
-	return err.Error()
-}
-
-func Code(err error) ErrorCode {
-	if cErr, ok := err.(HasCode); ok {
-		return cErr.Code()
-	}
-	return CodeUnexpected
-}
-
 type errorJsonModel struct {
 	Error   string    `json:"error"`
 	Code    ErrorCode `json:"code,omitempty"`

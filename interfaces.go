@@ -30,6 +30,8 @@ type HasCode interface {
 	Code() ErrorCode
 }
 
+// HasCode describes an error which has a
+// CallStack.
 type HasCallStack interface {
 	error
 
