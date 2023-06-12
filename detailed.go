@@ -108,17 +108,17 @@ func (t DetailedError) Error() string {
 // the error is printed in the format `<{errorCode}> {message} ({innerError})`.
 //
 // By passing the `+` flag, the inner error is represented in a seperate line.
-// Also, by using the width parameter, you can specify the depth of the
-// represented callstack (i.E. `%+5v` - prints a callstack of depth 5). Otherwise,
+// Also, by using the precision parameter, you can specify the depth of the
+// represented callstack (i.E. `%+.5v` - prints a callstack of depth 5). Otherwise,
 // no callstack will be printed.
 //
 // Bypassing the `#` flag, an even more verbose representation of the error is
 // printed. It shows the complete chain of errors wrapped in the DetailedError
 // with information about message, code, initiation origin and type of the error.
-// With the width parameter, you can define the depth of the unwrapping. The
+// With the precision parameter, you can define the depth of the unwrapping. The
 // default value is 100, if not specified.
 func (t DetailedError) Format(s fmt.State, verb rune) {
-	width, _ := s.Width()
+	width, _ := s.Precision()
 
 	switch verb {
 	case 'v':
