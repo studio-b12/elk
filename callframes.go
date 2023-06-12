@@ -8,18 +8,41 @@ import (
 	"strconv"
 )
 
+// CallFrame is a type alias for runtime.Frame with additional formatting
+// functionailty used in downstream functions.
+type CallFrame runtime.Frame
+
+func (t CallFrame) String() string {
+	return fmt.Sprintf("%s", t)
+}
+
+func (t CallFrame) Format(s fmt.State, verb rune) {
+	width, hasWidth := s.Width()
+
+	switch verb {
+	case 's':
+		format := "%s %s:%d"
+		if hasWidth {
+			format = "%-" + strconv.Itoa(width) + "s\t%s:%d"
+		}
+		fmt.Fprintf(s, format, t.Function, t.File, t.Line)
+	case 'v':
+		fmt.Fprintf(s, "%v", runtime.Frame(t))
+	}
+}
+
 // CallStack contains the list of called
 // runtime.Frames in the call chain with
 // an offset from which frames are
 // reported.
 type CallStack struct {
-	frames []runtime.Frame
+	frames []CallFrame
 	offset int
 }
 
 // Frames returns the offset slice of called
 // runtime.Frame's in the recorded call stack.
-func (t CallStack) Frames() []runtime.Frame {
+func (t CallStack) Frames() []CallFrame {
 	if len(t.frames) < t.offset {
 		return nil
 	}
@@ -42,8 +65,7 @@ func (t CallStack) WriteIndent(w io.Writer, max int, indent string) {
 		}
 	}
 	for _, frame := range frames {
-		format := "%s%-" + strconv.Itoa(maxLenFName) + "s\t%s:%d\n"
-		fmt.Fprintf(w, format, indent, frame.Function, frame.File, frame.Line)
+		fmt.Fprintf(w, "%s%"+strconv.Itoa(maxLenFName)+"s\n", indent, frame)
 	}
 }
 
@@ -75,8 +97,7 @@ func (t CallStack) At(n int) (s string, ok bool) {
 	}
 
 	frame := t.frames[n]
-	s = fmt.Sprintf("%s %s:%d", frame.Function, frame.File, frame.Line)
-	return s, true
+	return frame.String(), true
 }
 
 func getCallFrames(offset, n int) CallStack {
@@ -84,10 +105,10 @@ func getCallFrames(offset, n int) CallStack {
 	nPtrs := runtime.Callers(2, callerPtrs)
 	frameCursor := runtime.CallersFrames(callerPtrs[:nPtrs])
 
-	callFrames := make([]runtime.Frame, 0, nPtrs)
+	callFrames := make([]CallFrame, 0, nPtrs)
 	for {
 		frame, more := frameCursor.Next()
-		callFrames = append(callFrames, frame)
+		callFrames = append(callFrames, CallFrame(frame))
 		if !more {
 			break
 		}
