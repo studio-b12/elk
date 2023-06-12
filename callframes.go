@@ -36,22 +36,28 @@ func (t CallFrame) Format(s fmt.State, verb rune) {
 // an offset from which frames are
 // reported.
 type CallStack struct {
+	ptrs   []uintptr
 	frames []CallFrame
 	offset int
 }
 
 // Frames returns the offset slice of called
 // runtime.Frame's in the recorded call stack.
-func (t CallStack) Frames() []CallFrame {
+func (t *CallStack) Frames() []CallFrame {
+	if t.frames == nil {
+		t.fetchCallFrames()
+	}
+
 	if len(t.frames) < t.offset {
 		return nil
 	}
+
 	return t.frames[t.offset:]
 }
 
 // WriteIndent is an alias for write with the given
 // indent string attached before each line of output.
-func (t CallStack) WriteIndent(w io.Writer, max int, indent string) {
+func (t *CallStack) WriteIndent(w io.Writer, max int, indent string) {
 	frames := t.Frames()
 
 	if max > 0 && len(frames) > max {
@@ -75,13 +81,13 @@ func (t CallStack) WriteIndent(w io.Writer, max int, indent string) {
 //
 // max defines the number of stack frames which are
 // printed starting from the original caller.
-func (t CallStack) Write(w io.Writer, max int) {
+func (t *CallStack) Write(w io.Writer, max int) {
 	t.WriteIndent(w, max, "")
 }
 
 // String returns the formatted output of the callstack
 // as string.
-func (t CallStack) String() string {
+func (t *CallStack) String() string {
 	var b bytes.Buffer
 	t.Write(&b, 0)
 	return b.String()
@@ -89,23 +95,37 @@ func (t CallStack) String() string {
 
 // At returns the formatted call frame at the given position n
 // if existent.
-func (t CallStack) At(n int) (s string, ok bool) {
-	n += t.offset
+func (t *CallStack) At(n int) (s string, ok bool) {
+	frames := t.Frames()
 
-	if n >= len(t.frames) || n < 0 {
+	if n >= len(frames) || n < 0 {
 		return "", false
 	}
 
-	frame := t.frames[n]
+	frame := frames[n]
 	return frame.String(), true
 }
 
-func getCallFrames(offset, n int) CallStack {
+// First is shorthand for At(0) and returns the first frame in
+// the CallStack, if available.
+func (t *CallStack) First() (s string, ok bool) {
+	return t.At(0)
+}
+
+func newCallStack(offset int, n int) *CallStack {
 	callerPtrs := make([]uintptr, n)
 	nPtrs := runtime.Callers(2, callerPtrs)
-	frameCursor := runtime.CallersFrames(callerPtrs[:nPtrs])
 
-	callFrames := make([]CallFrame, 0, nPtrs)
+	return &CallStack{
+		ptrs:   callerPtrs[:nPtrs],
+		offset: offset,
+	}
+}
+
+func (t *CallStack) fetchCallFrames() {
+	frameCursor := runtime.CallersFrames(t.ptrs)
+
+	callFrames := make([]CallFrame, 0, len(t.ptrs))
 	for {
 		frame, more := frameCursor.Next()
 		callFrames = append(callFrames, CallFrame(frame))
@@ -114,8 +134,5 @@ func getCallFrames(offset, n int) CallStack {
 		}
 	}
 
-	return CallStack{
-		frames: callFrames,
-		offset: offset,
-	}
+	t.frames = callFrames
 }

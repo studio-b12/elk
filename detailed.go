@@ -28,7 +28,7 @@ type DetailedError struct {
 
 	code      ErrorCode
 	message   string
-	callStack CallStack
+	callStack *CallStack
 }
 
 var (
@@ -70,15 +70,10 @@ func Cast(err error, fallback ...ErrorCode) DetailedError {
 // Error() method.
 func Wrap(code ErrorCode, err error, message ...string) DetailedError {
 	var d DetailedError
+
 	d.code = code
-
-	if dErr, ok := As[HasCallStack](err); ok {
-		d.callStack = dErr.CallStack()
-	} else {
-		d.callStack = getCallFrames(1, maxCallStackDepth)
-	}
-
 	d.Inner = err
+	d.callStack = newCallStack(1, maxCallStackDepth)
 
 	if len(message) > 0 {
 		d.message = strings.Join(message, " ")
@@ -155,7 +150,7 @@ func (t DetailedError) Code() ErrorCode {
 // CallStack returns the errors CallStack
 // starting from where the DetailedError
 // has been created.
-func (t DetailedError) CallStack() CallStack {
+func (t DetailedError) CallStack() *CallStack {
 	return t.callStack
 }
 
@@ -176,7 +171,24 @@ func (t DetailedError) writeDetailed(w io.Writer, stack int) {
 
 	if stack > 0 {
 		fmt.Fprint(w, "stack:\n")
-		t.CallStack().WriteIndent(w, stack, "  ")
+
+		// We only want to print the last callstack in the error
+		// chain here, so we unwrap the error until we found the
+		// last one which implements HasCallStack.
+		var (
+			e  error = t
+			cs *CallStack
+		)
+		for e != nil {
+			ecs, ok := e.(HasCallStack)
+			if !ok {
+				break
+			}
+			cs = ecs.CallStack()
+			e = errors.Unwrap(e)
+		}
+
+		cs.WriteIndent(w, stack, "  ")
 	}
 
 	fmt.Fprintf(w, "inner error:\n  %s", t.Inner)

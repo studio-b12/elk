@@ -35,5 +35,5 @@ type HasCode interface {
 type HasCallStack interface {
 	error
 
-	CallStack() CallStack
+	CallStack() *CallStack
 }
