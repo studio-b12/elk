@@ -59,7 +59,7 @@ type errorJsonModel struct {
 }
 
 // Json takes an error and marhals it into
-// a JSON string.
+// a JSON byte slice.
 //
 // If err is a wrapped error, the inner error
 // will be represented in the "error" field.
@@ -81,7 +81,7 @@ type errorJsonModel struct {
 //
 // When the JSON marshal fails, an error is
 // returned.
-func Json(err error, exposeError ...bool) (string, error) {
+func Json(err error, exposeError ...bool) ([]byte, error) {
 	var model errorJsonModel
 
 	if len(exposeError) > 0 && exposeError[0] {
@@ -104,15 +104,15 @@ func Json(err error, exposeError ...bool) (string, error) {
 
 	data, jErr := json.MarshalIndent(model, "", "  ")
 	if jErr != nil {
-		return "", jErr
+		return nil, jErr
 	}
 
-	return string(data), nil
+	return data, nil
 }
 
 // MustJson is an alias for Json but panics when
 // the call to Json returns an error.
-func MustJson(err error) string {
+func MustJson(err error) []byte {
 	return mustV(Json(err))
 }
 
