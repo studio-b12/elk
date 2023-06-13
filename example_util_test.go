@@ -68,16 +68,16 @@ func ExampleJson() {
 	dErr := whoops.Wrap(whoops.ErrorCode("some-error-code"), strErr, "some message")
 
 	json, _ := whoops.Json(strErr)
-	fmt.Println(json)
+	fmt.Println(string(json))
 
 	json, _ = whoops.Json(strErr, true)
-	fmt.Println(json)
+	fmt.Println(string(json))
 
 	json, _ = whoops.Json(dErr, true)
-	fmt.Println(json)
+	fmt.Println(string(json))
 
 	json, _ = whoops.Json(dErr)
-	fmt.Println(json)
+	fmt.Println(string(json))
 
 	// Output:
 	// {
@@ -103,6 +103,7 @@ func Example_formatting() {
 	fmt.Printf("%s\n", err)
 
 	err = whoops.Wrap(whoops.CodeUnexpected, err, "Oh no!", "anyway")
+	fmt.Printf("%s\n", err)
 
 	// Print with callstack of depth 5
 	fmt.Printf("%+5v\n", err)
