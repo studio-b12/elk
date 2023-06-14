@@ -5,7 +5,7 @@ import (
 	"runtime"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
+	"github.com/studio-b12/elk/internal/assert"
 )
 
 func TestFrames(t *testing.T) {

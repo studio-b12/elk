@@ -3,8 +3,8 @@ package elk_test
 import (
 	"testing"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/studio-b12/elk"
+	"github.com/studio-b12/elk/internal/assert"
 )
 
 type stringError string
