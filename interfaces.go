@@ -1,4 +1,4 @@
-package whoops
+package elk
 
 // HasFormat describes an error with additional
 // information which can be accessed as a

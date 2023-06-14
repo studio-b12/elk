@@ -1,4 +1,4 @@
-package whoops
+package elk
 
 import (
 	"bytes"

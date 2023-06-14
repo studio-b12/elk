@@ -1,14 +1,14 @@
-package whoops_test
+package elk_test
 
 import (
 	"errors"
 	"fmt"
 
-	"github.com/studio-b12/whoops"
+	"github.com/studio-b12/elk"
 )
 
 type StatusError struct {
-	whoops.InnerError
+	elk.InnerError
 
 	StatusCode int
 }
@@ -29,7 +29,7 @@ func Example_inner() {
 	statusErr := NewStatusError(err, 404)
 	fmt.Println(statusErr.Error())
 
-	// Because whoops.InnerError implements the Error()
+	// Because elk.InnerError implements the Error()
 	// as well as the Unwrap() method, StatusError inherits
 	// these methods unless they are overridden.
 	inner := errors.Unwrap(statusErr)

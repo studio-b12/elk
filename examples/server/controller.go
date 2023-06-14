@@ -3,7 +3,7 @@ package main
 import (
 	"sync"
 
-	"github.com/studio-b12/whoops"
+	"github.com/studio-b12/elk"
 )
 
 type Controller struct {
@@ -23,11 +23,11 @@ func (t *Controller) GetCount(id string) (Count, error) {
 
 	count, ok, err := t.db.GetCount(id)
 	if err != nil {
-		return Count{}, whoops.Wrap(ErrorInternal, err, "failed getting count from database")
+		return Count{}, elk.Wrap(ErrorInternal, err, "failed getting count from database")
 	}
 
 	if !ok {
-		return Count{}, whoops.NewError(ErrorCountNotFound)
+		return Count{}, elk.NewError(ErrorCountNotFound)
 	}
 
 	c := Count{
@@ -43,14 +43,14 @@ func (t *Controller) IncrementCount(id string) (Count, error) {
 
 	count, _, err := t.db.GetCount(id)
 	if err != nil {
-		return Count{}, whoops.Wrap(ErrorInternal, err, "failed getting count from database")
+		return Count{}, elk.Wrap(ErrorInternal, err, "failed getting count from database")
 	}
 
 	count++
 
 	err = t.db.SetCount(id, count)
 	if err != nil {
-		return Count{}, whoops.Wrap(ErrorInternal, err, "failed setting count to database")
+		return Count{}, elk.Wrap(ErrorInternal, err, "failed setting count to database")
 	}
 
 	c := Count{

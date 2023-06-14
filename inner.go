@@ -1,4 +1,4 @@
-package whoops
+package elk
 
 // InnerError wraps an inner error which's message
 // is returned by calling Error() on it and

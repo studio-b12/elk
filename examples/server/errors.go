@@ -1,8 +1,8 @@
 package main
 
-import "github.com/studio-b12/whoops"
+import "github.com/studio-b12/elk"
 
 const (
-	ErrorInternal      = whoops.ErrorCode("internal-server-error")
-	ErrorCountNotFound = whoops.ErrorCode("cound-not-found")
+	ErrorInternal      = elk.ErrorCode("internal-server-error")
+	ErrorCountNotFound = elk.ErrorCode("cound-not-found")
 )

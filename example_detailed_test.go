@@ -1,4 +1,4 @@
-package whoops_test
+package elk_test
 
 import (
 	"encoding/json"
@@ -6,19 +6,19 @@ import (
 	"log"
 	"os"
 
-	"github.com/studio-b12/whoops"
+	"github.com/studio-b12/elk"
 )
 
 var (
-	ErrorReadFile      = whoops.ErrorCode("files:failed-reading-file")
-	ErrorParsingConfig = whoops.ErrorCode("config:failed-parsing")
-	ErrorReadingConfig = whoops.ErrorCode("config:failed-reading")
+	ErrorReadFile      = elk.ErrorCode("files:failed-reading-file")
+	ErrorParsingConfig = elk.ErrorCode("config:failed-parsing")
+	ErrorReadingConfig = elk.ErrorCode("config:failed-reading")
 )
 
 func readFile() ([]byte, error) {
 	data, err := os.ReadFile("does/not/exist")
 	if err != nil {
-		return nil, whoops.Wrap(ErrorReadFile, err, "failed reading file")
+		return nil, elk.Wrap(ErrorReadFile, err, "failed reading file")
 	}
 	return data, nil
 }
@@ -32,13 +32,13 @@ func parseConfig() (cfg configModel, err error) {
 	data, err := readFile()
 	if err != nil {
 		return configModel{},
-			whoops.Wrap(ErrorReadFile, err, "failed reading config file")
+			elk.Wrap(ErrorReadFile, err, "failed reading config file")
 	}
 
 	err = json.Unmarshal(data, &cfg)
 	if err != nil {
 		return configModel{},
-			whoops.Wrap(ErrorParsingConfig, err, "failed parsing config data")
+			elk.Wrap(ErrorParsingConfig, err, "failed parsing config data")
 	}
 
 	return cfg, nil

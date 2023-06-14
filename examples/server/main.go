@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/studio-b12/whoops"
+	"github.com/studio-b12/elk"
 )
 
 func main() {
@@ -42,14 +42,14 @@ func handleGetCount(ctl *Controller, w http.ResponseWriter, r *http.Request) {
 
 	res, err := ctl.GetCount(id)
 	if err != nil {
-		switch whoops.Cast(err).Code() {
+		switch elk.Cast(err).Code() {
 		case ErrorCountNotFound:
 			w.WriteHeader(http.StatusNotFound)
 		default:
 			log.Printf("error: %+.5v\n", err)
 			w.WriteHeader(http.StatusInternalServerError)
 		}
-		w.Write(whoops.MustJson(err))
+		w.Write(elk.MustJson(err))
 		return
 	}
 
@@ -66,12 +66,12 @@ func handlePostCount(ctl *Controller, w http.ResponseWriter, r *http.Request) {
 
 	res, err := ctl.IncrementCount(id)
 	if err != nil {
-		switch whoops.Cast(err).Code() {
+		switch elk.Cast(err).Code() {
 		default:
 			log.Printf("error: %#.5v\n", err)
 			w.WriteHeader(http.StatusInternalServerError)
 		}
-		w.Write(whoops.MustJson(err))
+		w.Write(elk.MustJson(err))
 		return
 	}
 
