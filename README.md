@@ -10,14 +10,14 @@ Create a detailed error witn an error code and message.
 ```go
 const ErrDeviceNotFound = elk.ErrorCode("device-not-found")
 
-err := elk.Detailed(ErrDeviceNotFound, "the device could not be found")
+err := elk.NewError(ErrDeviceNotFound, "the device could not be found")
 ```
 
 Wrap a previous error with an error code and message.
 ```go
 device, err := db.GetDevice(id)
 if err != nil {
-    err = elk.Detailed(elk.CodeUnexpected, 
+    err = elk.Wrap(elk.CodeUnexpected, err,
         "failed receiving device from database")
 }
 ```
