@@ -34,7 +34,7 @@ func ExampleAs() {
 	err = whoops.Wrap(whoops.CodeUnexpected, err, "Some message")
 	err = WrappedError{InnerError: whoops.InnerError{Inner: err}}
 
-	detailedError, ok := whoops.As[whoops.DetailedError](err)
+	detailedError, ok := whoops.As[whoops.Error](err)
 	if ok {
 		message := detailedError.Message()
 		fmt.Println(message)
@@ -52,10 +52,10 @@ func ExampleIsOfType() {
 	var err error = whoops.Wrap(whoops.CodeUnexpected, innerError, "Some message")
 	err = WrappedError{InnerError: whoops.InnerError{Inner: err}}
 
-	is := whoops.IsOfType[whoops.DetailedError](innerError)
+	is := whoops.IsOfType[whoops.Error](innerError)
 	fmt.Println("innerError:", is)
 
-	is = whoops.IsOfType[whoops.DetailedError](err)
+	is = whoops.IsOfType[whoops.Error](err)
 	fmt.Println("err:", is)
 
 	// Output:

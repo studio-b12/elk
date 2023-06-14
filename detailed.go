@@ -19,11 +19,11 @@ const (
 	indent            = "    "
 )
 
-// DetailedError contains a wrapped inner error,
+// Error contains a wrapped inner error,
 // an optional message, optional details objects
 // and a CallStack from where the error has been
 // created.
-type DetailedError struct {
+type Error struct {
 	InnerError
 
 	code      ErrorCode
@@ -32,14 +32,14 @@ type DetailedError struct {
 }
 
 var (
-	_ HasMessage   = (*DetailedError)(nil)
-	_ HasCode      = (*DetailedError)(nil)
-	_ HasCallStack = (*DetailedError)(nil)
+	_ HasMessage   = (*Error)(nil)
+	_ HasCode      = (*Error)(nil)
+	_ HasCallStack = (*Error)(nil)
 )
 
-// Detailed creates a new DetailedError with the
+// NewError creates a new DetailedError with the
 // given code and optional message.
-func Detailed(code ErrorCode, message ...string) DetailedError {
+func NewError(code ErrorCode, message ...string) Error {
 	d := Wrap(code, errors.New(string(code)), message...)
 	d.callStack.offset++
 	return d
@@ -51,8 +51,8 @@ func Detailed(code ErrorCode, message ...string) DetailedError {
 // DetailedError. Otherwise, CodeUnexpected is used.
 //
 // If err is of type DetailedError, it is simply returned unchanged.
-func Cast(err error, fallback ...ErrorCode) DetailedError {
-	d, ok := err.(DetailedError)
+func Cast(err error, fallback ...ErrorCode) Error {
+	d, ok := err.(Error)
 	if !ok {
 		fallbackCode := CodeUnexpected
 		if len(fallback) > 0 {
@@ -68,8 +68,8 @@ func Cast(err error, fallback ...ErrorCode) DetailedError {
 // additional message. The message will be shown
 // in place of the wrapped errors result of the
 // Error() method.
-func Wrap(code ErrorCode, err error, message ...string) DetailedError {
-	var d DetailedError
+func Wrap(code ErrorCode, err error, message ...string) Error {
+	var d Error
 
 	d.code = code
 	d.Inner = err
@@ -84,7 +84,7 @@ func Wrap(code ErrorCode, err error, message ...string) DetailedError {
 
 // Error returns the error information as
 // formatted string.
-func (t DetailedError) Error() string {
+func (t Error) Error() string {
 	return fmt.Sprintf("%s", t)
 }
 
@@ -112,15 +112,15 @@ func (t DetailedError) Error() string {
 // with information about message, code, initiation origin and type of the error.
 // With the precision parameter, you can define the depth of the unwrapping. The
 // default value is 100, if not specified.
-func (t DetailedError) Format(s fmt.State, verb rune) {
+func (t Error) Format(s fmt.State, verb rune) {
 	width, _ := s.Precision()
 
 	switch verb {
 	case 'v':
 		if s.Flag('+') {
-			t.writeDetailed(s, width)
+			t.writeStack(s, width)
 		} else if s.Flag('#') {
-			t.writeStacked(s, width)
+			t.writeVerbose(s, width)
 		} else {
 			t.writeTitle(s, true)
 		}
@@ -137,24 +137,24 @@ func (t DetailedError) Format(s fmt.State, verb rune) {
 
 // Message returns the errors message text,
 // if specified.
-func (t DetailedError) Message() string {
+func (t Error) Message() string {
 	return t.message
 }
 
 // Code returns the inner ErrorCode of
 // the error.
-func (t DetailedError) Code() ErrorCode {
+func (t Error) Code() ErrorCode {
 	return t.code
 }
 
 // CallStack returns the errors CallStack
 // starting from where the DetailedError
 // has been created.
-func (t DetailedError) CallStack() *CallStack {
+func (t Error) CallStack() *CallStack {
 	return t.callStack
 }
 
-func (t DetailedError) writeTitle(w io.Writer, withError bool) {
+func (t Error) writeTitle(w io.Writer, withError bool) {
 	fmt.Fprintf(w, "<%s>", t.code)
 	if t.message != "" {
 		fmt.Fprintf(w, " %s", t.message)
@@ -164,7 +164,7 @@ func (t DetailedError) writeTitle(w io.Writer, withError bool) {
 	}
 }
 
-func (t DetailedError) writeDetailed(w io.Writer, stack int) {
+func (t Error) writeStack(w io.Writer, stack int) {
 	t.writeTitle(w, false)
 
 	fmt.Fprintln(w)
@@ -194,7 +194,7 @@ func (t DetailedError) writeDetailed(w io.Writer, stack int) {
 	fmt.Fprintf(w, "inner error:\n  %s", t.Inner)
 }
 
-func (t DetailedError) writeStacked(w io.Writer, depth int) {
+func (t Error) writeVerbose(w io.Writer, depth int) {
 	if depth == 0 {
 		depth = 100
 	}
@@ -203,7 +203,7 @@ func (t DetailedError) writeStacked(w io.Writer, depth int) {
 	i := 0
 
 	for err != nil && i < depth {
-		if d, ok := err.(DetailedError); ok {
+		if d, ok := err.(Error); ok {
 			d.writeTitle(w, false)
 
 			fmt.Fprintln(w)

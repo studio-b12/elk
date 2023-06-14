@@ -27,7 +27,7 @@ func (t *Controller) GetCount(id string) (Count, error) {
 	}
 
 	if !ok {
-		return Count{}, whoops.Detailed(ErrorCountNotFound)
+		return Count{}, whoops.NewError(ErrorCountNotFound)
 	}
 
 	c := Count{
