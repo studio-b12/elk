@@ -44,7 +44,7 @@ func parseConfig() (cfg configModel, err error) {
 	return cfg, nil
 }
 
-func Example_detailedError() {
+func Example_Error() {
 	_, err := parseConfig()
 	if err != nil {
 		fmt.Println(err)

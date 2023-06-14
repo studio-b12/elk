@@ -34,9 +34,9 @@ func ExampleAs() {
 	err = elk.Wrap(elk.CodeUnexpected, err, "Some message")
 	err = WrappedError{InnerError: elk.InnerError{Inner: err}}
 
-	detailedError, ok := elk.As[elk.Error](err)
+	Error, ok := elk.As[elk.Error](err)
 	if ok {
-		message := detailedError.Message()
+		message := Error.Message()
 		fmt.Println(message)
 	}
 

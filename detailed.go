@@ -37,7 +37,7 @@ var (
 	_ HasCallStack = (*Error)(nil)
 )
 
-// NewError creates a new DetailedError with the
+// NewError creates a new Error with the
 // given code and optional message.
 func NewError(code ErrorCode, message ...string) Error {
 	d := Wrap(code, errors.New(string(code)), message...)
@@ -45,12 +45,12 @@ func NewError(code ErrorCode, message ...string) Error {
 	return d
 }
 
-// Cast takes an arbitrary error and if it is not of type DetailedError,
-// it will be wrapped in a new DetailedError which is then returned.
+// Cast takes an arbitrary error and if it is not of type Error,
+// it will be wrapped in a new Error which is then returned.
 // If fallback is passed, it will be used as the ErrorCode of the new
-// DetailedError. Otherwise, CodeUnexpected is used.
+// Error. Otherwise, CodeUnexpected is used.
 //
-// If err is of type DetailedError, it is simply returned unchanged.
+// If err is of type Error, it is simply returned unchanged.
 func Cast(err error, fallback ...ErrorCode) Error {
 	d, ok := err.(Error)
 	if !ok {
@@ -108,7 +108,7 @@ func (t Error) Error() string {
 // no callstack will be printed.
 //
 // Bypassing the `#` flag, an even more verbose representation of the error is
-// printed. It shows the complete chain of errors wrapped in the DetailedError
+// printed. It shows the complete chain of errors wrapped in the Error
 // with information about message, code, initiation origin and type of the error.
 // With the precision parameter, you can define the depth of the unwrapping. The
 // default value is 100, if not specified.
@@ -148,7 +148,7 @@ func (t Error) Code() ErrorCode {
 }
 
 // CallStack returns the errors CallStack
-// starting from where the DetailedError
+// starting from where the Error
 // has been created.
 func (t Error) CallStack() *CallStack {
 	return t.callStack
