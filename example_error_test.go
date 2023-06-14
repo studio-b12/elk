@@ -2,7 +2,6 @@ package elk_test
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"os"
 
@@ -44,10 +43,9 @@ func parseConfig() (cfg configModel, err error) {
 	return cfg, nil
 }
 
-func Example_Error() {
+func Example_error() {
 	_, err := parseConfig()
 	if err != nil {
-		fmt.Println(err)
-		log.Fatalf("config parsing failed: %s", err)
+		log.Fatalf("config parsing failed: %v", err)
 	}
 }
