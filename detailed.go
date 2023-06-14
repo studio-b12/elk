@@ -113,14 +113,17 @@ func (t Error) Error() string {
 // With the precision parameter, you can define the depth of the unwrapping. The
 // default value is 100, if not specified.
 func (t Error) Format(s fmt.State, verb rune) {
-	width, _ := s.Precision()
+	precision, hasPrecision := s.Precision()
 
 	switch verb {
 	case 'v':
 		if s.Flag('+') {
-			t.writeStack(s, width)
+			if !hasPrecision {
+				precision = 1000
+			}
+			t.writeStack(s, precision)
 		} else if s.Flag('#') {
-			t.writeVerbose(s, width)
+			t.writeVerbose(s, precision)
 		} else {
 			t.writeTitle(s, true)
 		}
@@ -196,7 +199,7 @@ func (t Error) writeStack(w io.Writer, stack int) {
 
 func (t Error) writeVerbose(w io.Writer, depth int) {
 	if depth == 0 {
-		depth = 100
+		depth = 1000
 	}
 
 	var err error = t
