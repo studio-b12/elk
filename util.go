@@ -116,6 +116,21 @@ func MustJson(err error) []byte {
 	return mustV(Json(err))
 }
 
+// JsonString behaves the same as Json() but returns the result as string instead
+// of a slice of bytes.
+func JsonString(err error, exposeError ...bool) (string, error) {
+	res, err := Json(err, exposeError...)
+	if err != nil {
+		return "", err
+	}
+	return string(res), nil
+}
+
+// MustJson is an alias for JsonString but panics when the call to Json returns an error.
+func MustJsonString(err error) string {
+	return mustV(JsonString(err))
+}
+
 func mustV[TV any](v TV, err error) TV {
 	if err != nil {
 		panic(err)
