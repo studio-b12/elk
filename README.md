@@ -36,39 +36,39 @@ A specific example could be the top level route handler in a web server that cal
 
 ```go
 func handleGetData(ctl *Controller, w http.ResponseWriter, r *http.Request) {
-	id := r.URL.Query().Get("id")
-	if id == "" {
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
+    id := r.URL.Query().Get("id")
+    if id == "" {
+        w.WriteHeader(http.StatusBadRequest)
+        return
+    }
 
-	res, err := ctl.GetData(id)
-	if err != nil {
+    res, err := ctl.GetData(id)
+    if err != nil {
         // Cast always returns an error of type `Error`, even if the returned
         // err is not. Then, it will be wrapped into an `Error` with code
         // elk.CodeUnexpected.
-		switch elk.Cast(err).Code() {
-		case ErrorDataNotFound:
-			w.WriteHeader(http.StatusNotFound)
+        switch elk.Cast(err).Code() {
+        case ErrorDataNotFound:
+            w.WriteHeader(http.StatusNotFound)
         case ErrorNoPermission:
             w.WriteHeader(http.StatusForbidden)
-		default:
+        default:
             // These are errors that might hint to a missbehavior of the 
             // application and thus, errors are logged using the detailed
             // format.
-			log.Printf("error: %+.5v\n", err)
-			w.WriteHeader(http.StatusInternalServerError)
-		}
+            log.Printf("error: %+.5v\n", err)
+            w.WriteHeader(http.StatusInternalServerError)
+        }
         // Display a comprehensive JSON representation of the error
         // containing the error code and the potential message.
         // The underlying error is not shown by default to prevent
         // leakage of internal application information.
-		w.Write(elk.MustJson(err))
-		return
-	}
+        w.Write(elk.MustJson(err))
+        return
+    }
 
-	d, _ := json.MarshalIndent(res, "", "  ")
-	w.Write(d)
+    d, _ := json.MarshalIndent(res, "", "  ")
+    w.Write(d)
 }
 ```
 
@@ -86,8 +86,8 @@ When printing the error as a simple string, it will reproduce an output simmilar
 const MyErrorCode = elk.ErrorCode("my-error-code")
 
 err := elk.Wrap(MyErrorCode,
-	errors.New("somethign went wrong"),
-	"Damn, what happened?")
+    errors.New("somethign went wrong"),
+    "Damn, what happened?")
 
 fmt.Printf("%s\n", err)
 // Output: Damn, what happened?
@@ -101,8 +101,8 @@ Without any further flags, this prints a single line combined output of the wrap
 const MyErrorCode = elk.ErrorCode("my-error-code")
 
 err := elk.Wrap(MyErrorCode,
-	errors.New("somethign went wrong"),
-	"Damn, what happened?")
+    errors.New("somethign went wrong"),
+    "Damn, what happened?")
 
 fmt.Printf("%v\n", err)
 // Output: <my-error-code> Damn, what happened? (somethign went wrong)
@@ -114,8 +114,8 @@ With the additional flag `+`, more details are shown like the callstack (see [Ca
 const MyErrorCode = elk.ErrorCode("my-error-code")
 
 err := elk.Wrap(MyErrorCode,
-	errors.New("somethign went wrong"),
-	"Damn, what happened?")
+    errors.New("somethign went wrong"),
+    "Damn, what happened?")
 
 fmt.Printf("%+.5v\n", err)
 // Output:
@@ -134,8 +134,8 @@ By setting the flag `#`, you can enable a verbose view of the error. This unwrap
 const MyErrorCode = elk.ErrorCode("my-error-code")
 
 err := elk.Wrap(MyErrorCode,
-	errors.New("somethign went wrong"),
-	"Damn, what happened?")
+    errors.New("somethign went wrong"),
+    "Damn, what happened?")
 
 fmt.Printf("%#.5v\n", err)
 // Output:
