@@ -80,7 +80,7 @@ As mentioned above, `Error` implements [`fmt.Formatter`](https://pkg.go.dev/fmt#
 
 #### `%s` or `%q`
 
-When printing the error as a simple string, it will reproduce an output simmilar to Go's default error types with a single message in a single line. If the error has a message, the message is snown. Otherwise, the `%s` formatted contents of the inner error is displayed.
+Prints a single message in a single line. If the error has a message, the message is shown. Otherwise, the `%s` formatted contents of the inner error is displayed.
 
 ```go
 const MyErrorCode = elk.ErrorCode("my-error-code")
