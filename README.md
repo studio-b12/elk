@@ -28,6 +28,50 @@ The recommended way to use this construct is to wrap an error on each layer in y
 
 This way, you can give other meaning to errors on each layer without losign details about each consecutive error.
 
+### How to distinct Errors
+
+The `Error` model is designed with clear error codes in mind to distinct them in a higher level in your application to finely control error behavior.
+
+A specific example could be the top level route handler in a web server that calls a controller method which can fail in multiple different ways.
+
+```go
+func handleGetData(ctl *Controller, w http.ResponseWriter, r *http.Request) {
+	id := r.URL.Query().Get("id")
+	if id == "" {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	res, err := ctl.GetData(id)
+	if err != nil {
+        // Cast always returns an error of type `Error`, even if the returned
+        // err is not. Then, it will be wrapped into an `Error` with code
+        // elk.CodeUnexpected.
+		switch elk.Cast(err).Code() {
+		case ErrorDataNotFound:
+			w.WriteHeader(http.StatusNotFound)
+        case ErrorNoPermission:
+            w.WriteHeader(http.StatusForbidden)
+		default:
+            // These are errors that might hint to a missbehavior of the 
+            // application and thus, errors are logged using the detailed
+            // format.
+			log.Printf("error: %+.5v\n", err)
+			w.WriteHeader(http.StatusInternalServerError)
+		}
+        // Display a comprehensive JSON representation of the error
+        // containing the error code and the potential message.
+        // The underlying error is not shown by default to prevent
+        // leakage of internal application information.
+		w.Write(elk.MustJson(err))
+		return
+	}
+
+	d, _ := json.MarshalIndent(res, "", "  ")
+	w.Write(d)
+}
+```
+
 ### Formatting
 
 > In [`examples/formatting`](examples/formatting), you can find the different formatting options in use. Execute it to see them in action in your terminal!
