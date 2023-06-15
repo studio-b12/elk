@@ -6,7 +6,7 @@ An extensive error package with focus on comprehensiveness, tracability and ease
 
 elk provides a simple error model called `Error`. It is classified by an `ErrorCode` and either wraps a given inner error or creates one if there is no underlying error. You can also pass an optional message to provide more detailed context to the error. `Error`s also record the callstack from where they have been created so that they can be easily traced thorugh the codebase, if necessary.
 
-Create a detailed error witn an error code and message.
+Create a detailed error with an error code and message.
 ```go
 const ErrDeviceNotFound = elk.ErrorCode("device-not-found")
 
@@ -22,7 +22,7 @@ if err != nil {
 }
 ```
 
-`Error` also implements the [`fmt.Formatter`](https://pkg.go.dev/fmt#Formatter) interface so you can finely control how errors are displayed. See the [Formatting](#formatting) section for more information.
+`Error` also implements the [`fmt.Formatter`](https://pkg.go.dev/fmt#Formatter) interface so you can granularly control how errors are displayed. See the [Formatting](#formatting) section for more information.
 
 The recommended way to use this construct is to wrap an error on each layer in your application where the error changes the state of the outcome of the error. In example, when your database returns an `ErrNoRows` error and in your controller, that means that no values could be found for the given request, you can wrap the original database error with an error Code (`ErrObjectNotFound` i.E.) and an additional message to clarify what went wrong to either the user or developers of the layers above, if desired.
 
