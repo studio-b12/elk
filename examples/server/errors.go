@@ -4,5 +4,5 @@ import "github.com/studio-b12/elk"
 
 const (
 	ErrorInternal      = elk.ErrorCode("internal-server-error")
-	ErrorCountNotFound = elk.ErrorCode("cound-not-found")
+	ErrorCountNotFound = elk.ErrorCode("count-not-found")
 )
