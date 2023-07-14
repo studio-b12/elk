@@ -2,6 +2,9 @@
 
 An extensive error package with focus on comprehensiveness, tracability and ease of use.
 
+> **Warning**  
+> This package is currently still in a proof-of-concept state and might undergo breaking API changes in the future until `v1.0.0` is released.
+
 ## Getting started
 
 elk provides a simple error model called `Error`. It is classified by an `ErrorCode` and either wraps a given inner error or creates one if there is no underlying error. You can also pass an optional message to provide more detailed context to the error. `Error`s also record the callstack from where they have been created so that they can be easily traced thorugh the codebase, if necessary.
