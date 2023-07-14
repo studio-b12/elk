@@ -182,4 +182,4 @@ If you want to contribute to the project, just [create a fork](https://github.co
 © 2023 B12-Touch GmbH  
 https://b12-touch.de
 
-Covered by the MIT License.
+Covered by the BSD [3-Clause License](LICENSE).
