@@ -37,12 +37,19 @@ var (
 	_ HasCallStack = (*Error)(nil)
 )
 
-// NewError creates a new Error with the
-// given code and optional message.
+// NewError creates a new Error with the given code and optional message.
 func NewError(code ErrorCode, message ...string) Error {
 	d := Wrap(code, errors.New(string(code)), message...)
 	d.callStack.offset++
 	return d
+}
+
+// NewError creates a new Error with the given code and message formatted
+// according to the given format specification.
+func NewErrorf(code ErrorCode, format string, a ...any) Error {
+	e := NewError(code, fmt.Sprintf(format, a...))
+	e.callStack.offset++
+	return e
 }
 
 // Cast takes an arbitrary error and if it is not of type Error,
@@ -64,10 +71,8 @@ func Cast(err error, fallback ...ErrorCode) Error {
 	return d
 }
 
-// WrapMessage is the same as wrap including an
-// additional message. The message will be shown
-// in place of the wrapped errors result of the
-// Error() method.
+// Wrap takes an ErrorCode, error and an optional message and creates a
+// new wrapped Error containing the passed error.
 func Wrap(code ErrorCode, err error, message ...string) Error {
 	var d Error
 
@@ -77,6 +82,15 @@ func Wrap(code ErrorCode, err error, message ...string) Error {
 	d.setMessage(message)
 
 	return d
+}
+
+// Wrapf takes an ErrorCode, error and a message formatted according to the
+// given format specification and creates a new wrapped Error containing the
+// passed error.
+func Wrapf(code ErrorCode, err error, format string, a ...any) Error {
+	e := Wrap(code, err, fmt.Sprintf(format, a...))
+	e.callStack.offset++
+	return e
 }
 
 // WrapCopyCode wraps the error with an optional message keeping the error code
@@ -93,6 +107,15 @@ func WrapCopyCode(err error, message ...string) Error {
 	e = Wrap(code, err, message...)
 	e.callStack.offset++
 
+	return e
+}
+
+// WrapCopyCode wraps the error with a message formatted according to the given
+// format specification keeping the error code of the wrapped error. If the
+// wrapped error does not have a error code, CodeUnexpected is set insetad.
+func WrapCopyCodef(err error, format string, a ...any) Error {
+	e := WrapCopyCode(err, fmt.Sprintf(format, a...))
+	e.callStack.offset++
 	return e
 }
 
