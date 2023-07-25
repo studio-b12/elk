@@ -74,12 +74,26 @@ func Wrap(code ErrorCode, err error, message ...string) Error {
 	d.code = code
 	d.Inner = err
 	d.callStack = newCallStack(1, maxCallStackDepth)
-
-	if len(message) > 0 {
-		d.message = strings.Join(message, " ")
-	}
+	d.setMessage(message)
 
 	return d
+}
+
+// WrapCopyCode wraps the error with an optional message keeping the error code
+// of the wrapped error. If the wrapped error does not have a error code,
+// CodeUnexpected is set insetad.
+func WrapCopyCode(err error, message ...string) Error {
+	e, ok := err.(Error)
+
+	code := CodeUnexpected
+	if ok {
+		code = e.code
+	}
+
+	e = Wrap(code, err, message...)
+	e.callStack.offset++
+
+	return e
 }
 
 // Error returns the error information as
@@ -155,6 +169,12 @@ func (t Error) Code() ErrorCode {
 // has been created.
 func (t Error) CallStack() *CallStack {
 	return t.callStack
+}
+
+func (t *Error) setMessage(message []string) {
+	if len(message) > 0 {
+		t.message = strings.Join(message, " ")
+	}
 }
 
 func (t Error) writeTitle(w io.Writer, withError bool) {
