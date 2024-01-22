@@ -16,7 +16,6 @@ const (
 
 const (
 	maxCallStackDepth = 100
-	indent            = "    "
 )
 
 // Error contains a wrapped inner error,
@@ -44,7 +43,7 @@ func NewError(code ErrorCode, message ...string) Error {
 	return d
 }
 
-// NewError creates a new Error with the given code and message formatted
+// NewErrorf creates a new Error with the given code and message formatted
 // according to the given format specification.
 func NewErrorf(code ErrorCode, format string, a ...any) Error {
 	e := NewError(code, fmt.Sprintf(format, a...))
@@ -57,15 +56,48 @@ func NewErrorf(code ErrorCode, format string, a ...any) Error {
 // If fallback is passed, it will be used as the ErrorCode of the new
 // Error. Otherwise, CodeUnexpected is used.
 //
+// If err is a joined error created with `errors.Join`, it will be
+// inspected for contained elk Error elements. Depending on the contents
+// of the join, it will be treated as following:
+//   - If the join contains exactly one elk Error, it will be returned.
+//   - If it contains no elk Error elements, the error will be wrapped
+//     using the passed fallback ErrorCode or CodeUnexpected.
+//   - If it contains more than one elk Error, a new wrapped Error is
+//     returned as well with the passed fallback ErrorCode or CodeUnexpected.
+//
 // If err is of type Error, it is simply returned unchanged.
 func Cast(err error, fallback ...ErrorCode) Error {
+	code := CodeUnexpected
+	if len(fallback) > 0 {
+		code = fallback[0]
+	}
+
+	if errJoin, ok := err.(interface{ Unwrap() []error }); ok {
+		errs := errJoin.Unwrap()
+		if len(errs) == 0 {
+			return Wrap(code, err)
+		}
+
+		var lastElkErr *Error
+		for _, err := range errs {
+			if elkErr, ok := err.(Error); ok {
+				if lastElkErr != nil {
+					return Wrap(code, err)
+				}
+				lastElkErr = &elkErr
+			}
+		}
+
+		if lastElkErr == nil {
+			return Wrap(code, err)
+		}
+
+		return *lastElkErr
+	}
+
 	d, ok := err.(Error)
 	if !ok {
-		fallbackCode := CodeUnexpected
-		if len(fallback) > 0 {
-			fallbackCode = fallback[0]
-		}
-		d = Wrap(fallbackCode, err)
+		d = Wrap(code, err)
 		d.callStack.offset++
 	}
 	return d

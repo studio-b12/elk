@@ -58,7 +58,7 @@ type errorJsonModel struct {
 	Details any       `json:"details,omitempty"`
 }
 
-// Json takes an error and marhals it into
+// Json takes an error and marshals it into
 // a JSON byte slice.
 //
 // If err is a wrapped error, the inner error
@@ -68,7 +68,7 @@ type errorJsonModel struct {
 // does only apply though if exposeError is
 // passed as true. By default, "error" will
 // contain no information about the actual
-// error to prevent unintented information
+// error to prevent unintended information
 // leakage.
 //
 // If the err implements HasCode, the code
@@ -126,7 +126,7 @@ func JsonString(err error, exposeError ...bool) (string, error) {
 	return string(res), nil
 }
 
-// MustJson is an alias for JsonString but panics when the call to Json returns an error.
+// MustJsonString is an alias for JsonString but panics when the call to Json returns an error.
 func MustJsonString(err error) string {
 	return mustV(JsonString(err))
 }
