@@ -89,7 +89,7 @@ Prints a single message in a single line. If the error has a message, the messag
 const MyErrorCode = elk.ErrorCode("my-error-code")
 
 err := elk.Wrap(MyErrorCode,
-    errors.New("somethign went wrong"),
+    errors.New("something went wrong"),
     "Damn, what happened?")
 
 fmt.Printf("%s\n", err)
@@ -104,11 +104,11 @@ Without any further flags, this prints a single line combined output of the wrap
 const MyErrorCode = elk.ErrorCode("my-error-code")
 
 err := elk.Wrap(MyErrorCode,
-    errors.New("somethign went wrong"),
+    errors.New("something went wrong"),
     "Damn, what happened?")
 
 fmt.Printf("%v\n", err)
-// Output: <my-error-code> Damn, what happened? (somethign went wrong)
+// Output: <my-error-code> Damn, what happened? (something went wrong)
 ```
 
 With the additional flag `+`, more details are shown like the callstack (see [Callstack secion](#callstack)) of the error and the inner error. By passing the precision parameter (i.E. `%+.5v`), you can specify the maximum depth of the shown callstack. By default, a depth of `1000` is assumed. If you set this to `0`, no call stack is printed.
@@ -117,18 +117,18 @@ With the additional flag `+`, more details are shown like the callstack (see [Ca
 const MyErrorCode = elk.ErrorCode("my-error-code")
 
 err := elk.Wrap(MyErrorCode,
-    errors.New("somethign went wrong"),
+    errors.New("something went wrong"),
     "Damn, what happened?")
 
 fmt.Printf("%+.5v\n", err)
 // Output:
 // <my-error-code> Damn, what happened?
 // stack:
-//   main.main             /home/r.hoffmann@intern.b12-group.de/dev/lib/whoops/examples/formatting/main.go:50
-//   runtime.main          /home/r.hoffmann@intern.b12-group.de/.local/goup/current/go/src/runtime/proc.go:250
-//   runtime.goexit        /home/r.hoffmann@intern.b12-group.de/.local/goup/current/go/src/runtime/asm_amd64.s:1598
+//   main.main             /home/foo/dev/lib/whoops/examples/formatting/main.go:50
+//   runtime.main          /home/foo/.local/goup/current/go/src/runtime/proc.go:250
+//   runtime.goexit        /home/foo/.local/goup/current/go/src/runtime/asm_amd64.s:1598
 // inner error:
-//   somethign went wrong
+//   something went wrong
 ```
 
 By setting the flag `#`, you can enable a verbose view of the error. This unwraps all layers of the error and prints a detailed overview of each visted error containing the error string, origin (where it has been wrapped) and the type of the error. You can also specify the maximum depth that shall be displayed by giving the precision parameter (i.E. `%#.5v`). When not specified, a default value of `1000` is assumed.
@@ -137,18 +137,18 @@ By setting the flag `#`, you can enable a verbose view of the error. This unwrap
 const MyErrorCode = elk.ErrorCode("my-error-code")
 
 err := elk.Wrap(MyErrorCode,
-    errors.New("somethign went wrong"),
+    errors.New("something went wrong"),
     "Damn, what happened?")
 
 fmt.Printf("%#.5v\n", err)
 // Output:
 // <my-error-code> Damn, what happened?
 // originated:
-//   main.main /home/r.hoffmann@intern.b12-group.de/dev/lib/whoops/examples/formatting/main.go:59
+//   main.main /home/foo/dev/lib/whoops/examples/formatting/main.go:59
 // type:
 //   elk.Error
 // ----------
-// somethign went wrong
+// something went wrong
 // type:
 //   *errors.errorString
 // ----------
