@@ -79,10 +79,10 @@ func Cast(err error, fallback ...ErrorCode) Error {
 		}
 
 		var lastElkErr *Error
-		for _, err := range errs {
-			if elkErr, ok := err.(Error); ok {
+		for _, innerErr := range errs {
+			if elkErr, ok := As[Error](innerErr); ok {
 				if lastElkErr != nil {
-					return Wrap(code, err)
+					return Wrap(code, innerErr)
 				}
 				lastElkErr = &elkErr
 			}
@@ -95,7 +95,7 @@ func Cast(err error, fallback ...ErrorCode) Error {
 		return *lastElkErr
 	}
 
-	d, ok := err.(Error)
+	d, ok := As[Error](err)
 	if !ok {
 		d = Wrap(code, err)
 		d.callStack.offset++
