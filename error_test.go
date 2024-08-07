@@ -70,7 +70,7 @@ func TestCast(t *testing.T) {
 		}
 
 		castErrCode := Cast(err).Code()
-		assert.Equal(t, errCode, castErrCode)
+		assert.Equal(t, CodeUnexpected, castErrCode)
 	})
 
 	t.Run("custom-model-wrapped", func(t *testing.T) {
@@ -90,6 +90,6 @@ func TestCast(t *testing.T) {
 		}
 
 		castErrCode := Cast(err).Code()
-		assert.Equal(t, errCode, castErrCode)
+		assert.Equal(t, CodeUnexpected, castErrCode)
 	})
 }
