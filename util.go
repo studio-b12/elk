@@ -51,11 +51,28 @@ func IsOfType[T error](err error) bool {
 	return false
 }
 
-type errorJsonModel struct {
-	Error   string    `json:"error"`
-	Code    ErrorCode `json:"code,omitempty"`
-	Message string    `json:"message,omitempty"`
-	Details any       `json:"details,omitempty"`
+// ErrorResponseModel is used to encode an Error into an API response.
+type ErrorResponseModel struct {
+	Code    ErrorCode // The error code
+	Message string    `json:",omitempty"` // An optional short message to further specify the error
+	Status  int       `json:",omitempty"` // An optional platform- or protocol-specific status code; i.e. HTTP status code
+	Details any       `json:",omitempty"` // Optional additional detailed context for the error
+}
+
+// ToResponseModel transforms the
+func (t Error) ToResponseModel(statusCode int) (model ErrorResponseModel) {
+	model.Status = statusCode
+	model.Code = t.Code()
+
+	if mErr, ok := As[HasMessage](t); ok {
+		model.Message = mErr.Message()
+	}
+
+	if dErr, ok := As[HasDetails](t); ok {
+		model.Details = dErr.Details()
+	}
+
+	return model
 }
 
 // Json takes an error and marshals it into
@@ -81,26 +98,8 @@ type errorJsonModel struct {
 //
 // When the JSON marshal fails, an error is
 // returned.
-func Json(err error, exposeError ...bool) ([]byte, error) {
-	var model errorJsonModel
-
-	if len(exposeError) > 0 && exposeError[0] {
-		if inner := errors.Unwrap(err); inner != nil {
-			model.Error = inner.Error()
-		} else {
-			model.Error = err.Error()
-		}
-	} else {
-		model.Error = "internal error"
-	}
-
-	if mErr, ok := err.(HasMessage); ok {
-		model.Message = mErr.Message()
-	}
-
-	if cErr, ok := err.(HasCode); ok {
-		model.Code = cErr.Code()
-	}
+func Json(err error, statusCode int) ([]byte, error) {
+	model := Cast(err).ToResponseModel(statusCode)
 
 	data, jErr := json.MarshalIndent(model, "", "  ")
 	if jErr != nil {
@@ -112,14 +111,14 @@ func Json(err error, exposeError ...bool) ([]byte, error) {
 
 // MustJson is an alias for Json but panics when
 // the call to Json returns an error.
-func MustJson(err error) []byte {
-	return mustV(Json(err))
+func MustJson(err error, statusCode int) []byte {
+	return mustV(Json(err, statusCode))
 }
 
 // JsonString behaves the same as Json() but returns the result as string instead
 // of a slice of bytes.
-func JsonString(err error, exposeError ...bool) (string, error) {
-	res, err := Json(err, exposeError...)
+func JsonString(err error, statusCode int) (string, error) {
+	res, err := Json(err, statusCode)
 	if err != nil {
 		return "", err
 	}
@@ -127,8 +126,8 @@ func JsonString(err error, exposeError ...bool) (string, error) {
 }
 
 // MustJsonString is an alias for JsonString but panics when the call to Json returns an error.
-func MustJsonString(err error) string {
-	return mustV(JsonString(err))
+func MustJsonString(err error, statusCode int) string {
+	return mustV(JsonString(err, statusCode))
 }
 
 func mustV[TV any](v TV, err error) TV {

@@ -17,7 +17,7 @@ func main() {
 
 	mux.HandleFunc("/count", handleCount(ctl))
 
-	http.ListenAndServe(":8080", mux)
+	_ = http.ListenAndServe(":8080", mux)
 }
 
 func handleCount(ctl *Controller) http.HandlerFunc {
@@ -42,19 +42,21 @@ func handleGetCount(ctl *Controller, w http.ResponseWriter, r *http.Request) {
 
 	res, err := ctl.GetCount(id)
 	if err != nil {
+		var status int
 		switch elk.Cast(err).Code() {
 		case ErrorCountNotFound:
-			w.WriteHeader(http.StatusNotFound)
+			status = http.StatusNotFound
 		default:
 			log.Printf("error: %+.5v\n", err)
-			w.WriteHeader(http.StatusInternalServerError)
+			status = http.StatusInternalServerError
 		}
-		w.Write(elk.MustJson(err))
+		w.WriteHeader(status)
+		_, _ = w.Write(elk.MustJson(err, status))
 		return
 	}
 
 	d, _ := json.MarshalIndent(res, "", "  ")
-	w.Write(d)
+	_, _ = w.Write(d)
 }
 
 func handlePostCount(ctl *Controller, w http.ResponseWriter, r *http.Request) {
@@ -71,10 +73,10 @@ func handlePostCount(ctl *Controller, w http.ResponseWriter, r *http.Request) {
 			log.Printf("error: %#.5v\n", err)
 			w.WriteHeader(http.StatusInternalServerError)
 		}
-		w.Write(elk.MustJson(err))
+		_, _ = w.Write(elk.MustJson(err, http.StatusInternalServerError))
 		return
 	}
 
 	d, _ := json.MarshalIndent(res, "", "  ")
-	w.Write(d)
+	_, _ = w.Write(d)
 }

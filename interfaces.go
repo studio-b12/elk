@@ -30,6 +30,12 @@ type HasCode interface {
 	Code() ErrorCode
 }
 
+type HasDetails interface {
+	error
+
+	Details() any
+}
+
 // HasCode describes an error which has a
 // CallStack.
 type HasCallStack interface {

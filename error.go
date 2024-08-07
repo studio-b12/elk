@@ -95,7 +95,7 @@ func Cast(err error, fallback ...ErrorCode) Error {
 		return *lastElkErr
 	}
 
-	d, ok := As[Error](err)
+	d, ok := err.(Error)
 	if !ok {
 		d = Wrap(code, err)
 		d.callStack.offset++
@@ -142,9 +142,9 @@ func WrapCopyCode(err error, message ...string) Error {
 	return e
 }
 
-// WrapCopyCode wraps the error with a message formatted according to the given
+// WrapCopyCodef wraps the error with a message formatted according to the given
 // format specification keeping the error code of the wrapped error. If the
-// wrapped error does not have a error code, CodeUnexpected is set insetad.
+// wrapped error does not have a error code, CodeUnexpected is set instead.
 func WrapCopyCodef(err error, format string, a ...any) Error {
 	e := WrapCopyCode(err, fmt.Sprintf(format, a...))
 	e.callStack.offset++

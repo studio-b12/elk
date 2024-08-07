@@ -63,38 +63,81 @@ func ExampleIsOfType() {
 	// err: true
 }
 
+type DetailedError struct {
+	elk.InnerError
+	details any
+}
+
+func (t DetailedError) Details() any {
+	return t.details
+}
+
 func ExampleJson() {
 	strErr := errors.New("some error")
-	dErr := elk.Wrap(elk.ErrorCode("some-error-code"), strErr, "some message")
+	mErr := elk.Wrap("some-error-code", strErr, "some message")
 
-	json, _ := elk.Json(strErr)
+	json, _ := elk.Json(strErr, 0)
 	fmt.Println(string(json))
 
-	json, _ = elk.Json(strErr, true)
+	json, _ = elk.Json(strErr, 400)
 	fmt.Println(string(json))
 
-	json, _ = elk.Json(dErr, true)
+	json, _ = elk.Json(mErr, 0)
 	fmt.Println(string(json))
 
-	json, _ = elk.Json(dErr)
+	json, _ = elk.Json(mErr, 400)
+	fmt.Println(string(json))
+
+	dtErr := DetailedError{}
+	dtErr.Inner = elk.NewError("some-error", "an error with details")
+	dtErr.details = struct {
+		Foo string
+		Bar int
+	}{
+		Foo: "foo",
+		Bar: 123,
+	}
+
+	json, _ = elk.Json(dtErr, 500)
+	fmt.Println(string(json))
+
+	dteErr := elk.Wrap("some-detailed-error-wrapped", dtErr, "some detailed error wrapped")
+	json, _ = elk.Json(dteErr, 500)
 	fmt.Println(string(json))
 
 	// Output:
 	// {
-	//   "error": "internal error"
+	//   "Code": "unexpected-error"
 	// }
 	// {
-	//   "error": "some error"
+	//   "Code": "unexpected-error",
+	//   "Status": 400
 	// }
 	// {
-	//   "error": "some error",
-	//   "code": "some-error-code",
-	//   "message": "some message"
+	//   "Code": "some-error-code",
+	//   "Message": "some message"
 	// }
 	// {
-	//   "error": "internal error",
-	//   "code": "some-error-code",
-	//   "message": "some message"
+	//   "Code": "some-error-code",
+	//   "Message": "some message",
+	//   "Status": 400
+	// }
+	// {
+	//   "Code": "unexpected-error",
+	//   "Status": 500,
+	//   "Details": {
+	//     "Foo": "foo",
+	//     "Bar": 123
+	//   }
+	// }
+	// {
+	//   "Code": "some-detailed-error-wrapped",
+	//   "Message": "some detailed error wrapped",
+	//   "Status": 500,
+	//   "Details": {
+	//     "Foo": "foo",
+	//     "Bar": 123
+	//   }
 	// }
 }
 
