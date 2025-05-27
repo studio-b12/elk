@@ -51,7 +51,7 @@ func NewErrorf(code ErrorCode, format string, a ...any) Error {
 	return e
 }
 
-// Cast takes an arbitrary error and if it is not of type Error,
+// Cast takes an arbitrary error, and if it is not of type Error,
 // it will be wrapped in a new Error which is then returned.
 // If fallback is passed, it will be used as the ErrorCode of the new
 // Error. Otherwise, CodeUnexpected is used.
@@ -95,12 +95,24 @@ func Cast(err error, fallback ...ErrorCode) Error {
 		return *lastElkErr
 	}
 
-	d, ok := err.(Error)
-	if !ok {
-		d = Wrap(code, err)
-		d.callStack.offset++
+	eErr, ok := err.(Error)
+	if ok {
+		return eErr
 	}
-	return d
+
+	if c, ok := err.(HasCode); ok {
+		if m, ok := err.(HasMessage); ok {
+			eErr = Wrap(c.Code(), err, m.Message())
+		} else {
+			eErr = Wrap(c.Code(), err)
+		}
+	} else {
+		eErr = Wrap(code, err)
+	}
+
+	eErr.callStack.offset++
+
+	return eErr
 }
 
 // Wrap takes an ErrorCode, error and an optional message and creates a

@@ -36,7 +36,7 @@ type HasDetails interface {
 	Details() any
 }
 
-// HasCode describes an error which has a
+// HasCallStack describes an error which has a
 // CallStack.
 type HasCallStack interface {
 	error
