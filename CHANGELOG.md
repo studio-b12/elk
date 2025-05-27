@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.5.0
+
+- Updated [`Cast`](https://pkg.go.dev/github.com/studio-b12/elk#Cast) so that error codes of errors which implement [`HasCode`](https://pkg.go.dev/github.com/studio-b12/elk#HasCode) are used when wrapping the error. When the error implements [`HasMessage`](https://pkg.go.dev/github.com/studio-b12/elk#HasMessage) as well, the message is transferred as well.
+
 ## v0.4.0
 
 - Updated [`Cast`](https://pkg.go.dev/github.com/studio-b12/elk#Cast) to make use of `errors.As` to unwrap errors.
