@@ -51,6 +51,11 @@ func IsOfType[T error](err error) bool {
 	return false
 }
 
+// IsCode is shorthand for `elk.Cast(err).Code() == errorCode`.
+func IsCode(err error, code ErrorCode) bool {
+	return Cast(err).Code() == code
+}
+
 // ErrorResponseModel is used to encode an Error into an API response.
 type ErrorResponseModel struct {
 	Code    ErrorCode // The error code
